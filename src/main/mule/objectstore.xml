@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d504f550-d159-49ff-b4e0-6e12829f3204" >
+		<http:listener-connection host="localhost" port="8082" />
+	</http:listener-config>
+	<os:object-store name="Object_store1" doc:name="Object store" doc:id="7c4b06a1-6abb-4045-87b8-b2b78cd87e3b" entryTtl="7" entryTtlUnit="DAYS" />
+	<flow name="objectstoreFlow" doc:id="b4501252-b502-4abf-8de4-1fcb0298bb46" >
+		<http:listener doc:name="Listener" doc:id="70b3b485-905b-4725-88c6-c5c0d80e57bb" config-ref="HTTP_Listener_config" path="/objectstore"/>
+		<logger level="INFO" doc:name="Logger" doc:id="52842a00-f35d-4a5a-86e5-a5fd61174c6f" message="start logger"/>
+		<ee:transform doc:name="Transform Message" doc:id="842ba3f5-78aa-4aa1-9e9d-0bbccb56c0a9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message" : "Happy Monday"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<os:store doc:name="objectstore flow" doc:id="f356c600-9ff7-44de-a304-13d28c3b8994" key="InputRequest" objectStore="Object_store1"/>
+		<flow-ref doc:name="objectstoreFlow1" doc:id="2b812ab2-526a-4833-9a91-eff20aed322b" name="objectstoreFlow1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="55f4a681-0c6a-4b3f-9d81-3f0537d81d1f" message="end flow"/>
+	</flow>
+	<flow name="objectstoreFlow1" doc:id="e7b54169-5f31-4f9b-8cb7-3f27d68b4b90" >
+		<logger level="INFO" doc:name="start Logger" doc:id="cc8bfa95-476f-4a1f-9eee-3bf815528328" />
+		<os:retrieve doc:name="Retrieve" doc:id="3362201a-cf2b-498d-8b8b-06fcf919d506" key="InputRequest" objectStore="Object_store1"/>
+		<ee:transform doc:name="Transform Message" doc:id="b5472268-1f10-43b8-b4b8-3bd6dd806433">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="end logger" doc:id="368cc8e5-e246-443d-b43c-571138566dca" />
+	</flow>
+</mule>
